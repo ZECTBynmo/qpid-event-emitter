@@ -1,5 +1,7 @@
 # Qpid EventEmitter
 
+[![Build Status](https://travis-ci.org/ZECTBynmo/qpid-event-emitter.svg?branch=master)](https://travis-ci.org/ZECTBynmo/qpid-event-emitter)
+
 EventEmitter abstraction on top of AMQP10, interfacing with the Qpid C++ broker via the [offical Apache node.js module](https://git-wip-us.apache.org/repos/asf?p=qpid-proton.git;a=tree;f=examples/javascript/messenger;hb=HEAD) (their C++ binding compiled to JS with Emscripten).
 
 ## Installation 
