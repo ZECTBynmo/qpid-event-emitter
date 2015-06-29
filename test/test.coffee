@@ -46,3 +46,16 @@ describe "QPID Event Emitter", ->
 		sender.emit 'test5', 'first'
 		sender.emit 'test5', 'second'
 		sender.emit 'test5', 'third'
+
+	it 'should namespace messages appropriately', (done) ->
+		sender = new QpidEmitter name: 'sender', channel: 'awesome/namespace'
+		onChannel = new QpidEmitter name: 'onChannel', channel: 'awesome/namespace'
+		offChannel = new QpidEmitter name: 'offChannel', channel: 'other/namespace'
+		noChannel = new QpidEmitter name: 'noChannel'
+
+		eventName = 'test6'
+
+		onChannel.on eventName, (data) -> done()
+		offChannel.on eventName, (data) -> done "Off channel receiver got data"
+		noChannel.on eventName, (data) -> done "No channel receiver got data"
+		sender.emit eventName, 'lol'

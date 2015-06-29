@@ -8,6 +8,8 @@ log = -> if DEBUG then console.log arguments...
 class Receiver extends EventEmitter
 
   constructor: (@options={}) ->
+    @setMaxListeners(0)
+
     @name = @options.name || 'receiver'
     @address = @options.address || 'amqp://~0.0.0.0'
     @message = new proton.Message
@@ -48,8 +50,9 @@ class Sender extends EventEmitter
     @name = @options.name || 'sender'
     @tracker = null
     @address = @options.address || 'amqp://0.0.0.0'
+    @channel = @options.channel
     @message = new proton.Message
-    
+     
     @messenger = new proton.Messenger
     @messenger.on 'error', (error) -> log error
     @messenger.on 'work', @pumpData
@@ -59,7 +62,7 @@ class Sender extends EventEmitter
     @message.setAddress @address
 
   send: (subject, msgtext) =>
-    @message.setSubject subject
+    @message.setSubject "#{@channel}/#{subject}"
     @message.body = msgtext
     log @name, "PUT", @message
     @tracker = @messenger.put @message
@@ -81,12 +84,15 @@ class QpidEventEmitter extends EventEmitter
 
   constructor: (@options={}) ->
     @name = @options.name || 'emitter'
-    @sender = new Sender name: @name
-    #@receiver = new Receiver name: @options.name
+    @channel = @options.channel || ''
+    @sender = new Sender name: @name, channel: @channel
 
     @receiver.on 'data', (data) =>
-      log @name, "GOT MESSAGE", data
-      @emit data.subject, data.data, false
+      channel = data.subject.split('/')
+      subject = channel.pop()
+      channel = channel.join('/')
+      if @channel == channel
+        @emit subject, data.data, false
 
   emit: (event, data, broadcast=true) =>
     if broadcast
